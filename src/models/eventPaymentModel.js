@@ -21,7 +21,7 @@ const EventPayment = {
             booked_date,
             time,
             no_of_guests,
-            menu, // This should now be a JSON array
+            menu,
             custom_stage,
         } = data;
 
@@ -29,23 +29,41 @@ const EventPayment = {
             `INSERT INTO EventPayments 
              (event_name, booked_by, account_title, account_number, payment_date, total_payment, paid_amount, payment_status, email, phone, cnic, booked_date, time, no_of_guests, menu, custom_stage) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [event_name, booked_by, account_title, account_number, payment_date, total_payment, paid_amount, payment_status, email, phone, cnic, booked_date, time, no_of_guests, JSON.stringify(menu), custom_stage]
+            [
+                event_name,
+                booked_by,
+                account_title,
+                account_number,
+                payment_date,
+                total_payment,
+                paid_amount,
+                payment_status,
+                email,
+                phone,
+                cnic,
+                booked_date,
+                time, // "morning" or "evening"
+                no_of_guests,
+                menu, // "Yes" or "No"
+                custom_stage, // "Yes" or "No"
+            ]
         );
 
         return result.insertId;
     },
     update: async (id, data) => {
-        const { payment_date, paid_amount, payment_status } = data;
+        const { payment_date, paid_amount, payment_status, time, menu, custom_stage } = data;
 
         await db.query(
             `UPDATE EventPayments 
-           SET payment_date = ?, paid_amount = ?, payment_status = ?, time = ?
-           WHERE id = ?`,
-            [payment_date, paid_amount, payment_status, id]
+             SET payment_date = ?, paid_amount = ?, payment_status = ?, time = ?, menu = ?, custom_stage = ?
+             WHERE id = ?`,
+            [payment_date, paid_amount, payment_status, time, menu, custom_stage, id]
         );
     },
     delete: async (id) => {
         await db.query('DELETE FROM EventPayments WHERE id = ?', [id]);
     },
 };
+
 module.exports = EventPayment;
