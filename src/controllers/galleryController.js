@@ -2,7 +2,6 @@ const multer = require("multer");
 const fs = require("fs");
 const Gallery = require("../models/galleryModel");
 
-// Configure Multer for file uploads
 const upload = multer({ dest: "uploads/" });
 
 const getGallery = async (req, res) => {
