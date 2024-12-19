@@ -52,13 +52,13 @@ const EventPayment = {
         return result.insertId;
     },
     update: async (id, data) => {
-        const { payment_date, paid_amount, payment_status, time, menu, custom_stage } = data;
+        const { payment_date, paid_amount, payment_status } = data;
 
         await db.query(
             `UPDATE EventPayments 
-             SET payment_date = ?, paid_amount = ?, payment_status = ?, time = ?, menu = ?, custom_stage = ?
+             SET payment_date = ?, paid_amount = ?, payment_status = ?
              WHERE id = ?`,
-            [payment_date, paid_amount, payment_status, time, menu, custom_stage, id]
+            [payment_date, paid_amount, payment_status, id]
         );
     },
     delete: async (id) => {
