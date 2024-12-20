@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const http = require('http');
 const userRoutes = require('./src/routes/userRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
@@ -8,22 +9,25 @@ const menuRoutes = require('./src/routes/menuRoutes');
 const galleryRoutes = require('./src/routes/galleryRoutes');
 const incomeRoutes = require('./src/routes/incomeRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
-// const { setupWebSocket } = require('./src/config/webSocket');
+const roomRoutes = require('./src/routes/roomRoutes');
 
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-
+app.use(bodyParser.json());
+// Serve static files (uploaded images)
+app.use('/uploads', express.static('uploads'));
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/staff', staffRoutes);
-app.use('/api/income', incomeRoutes)
-app.use('/api/notifications', notificationRoutes)
+app.use('/api/income', incomeRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/rooms', roomRoutes);
+
 
 // Create HTTP server and setup WebSocket
 // const server = http.createServer(app);
