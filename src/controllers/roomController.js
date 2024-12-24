@@ -14,6 +14,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const createRoom = async (req, res) => {
+    console.log(req);
+    
     try {
         const images = req.files.map(file => file.path);
         const data = { ...req.body, images: JSON.stringify(images) };
@@ -52,8 +54,28 @@ const getRoomById = async (req, res) => {
 const updateRoom = async (req, res) => {
     try {
         const { id } = req.params;
-        const images = req.files ? req.files.map(file => file.path) : [];
-        const data = { ...req.body, images: JSON.stringify(images) };
+        
+        // Get existing room data
+        const existingRoom = await Room.getById(id);
+        if (existingRoom.length === 0) {
+            return res.status(404).json({ message: 'Room not found' });
+        }
+
+        // Handle images
+        let images;
+        if (req.files && req.files.length > 0) {
+            // If new images are uploaded, use them
+            images = req.files.map(file => file.path);
+        } else {
+            // If no new images, keep existing ones
+            images = JSON.parse(existingRoom[0].images || '[]');
+        }
+
+        const data = { 
+            ...req.body, 
+            images: JSON.stringify(images)
+        };
+
         await Room.update(id, data);
         res.status(200).json({ message: 'Room updated successfully' });
     } catch (err) {

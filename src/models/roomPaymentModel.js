@@ -2,7 +2,7 @@ const db = require('../config/database');
 
 const RoomPayment = {
     getAll: async () => {
-        const [rows] = await db.query('SELECT * FROM RoomPayments');
+        const [rows] = await db.query('SELECT * FROM room_payments');
         return rows;
     },
     create: async (data) => {
@@ -21,7 +21,7 @@ const RoomPayment = {
             checkin_date,
             checkout_date } = data;
         const [result] = await db.query(
-            `INSERT INTO RoomPayments (
+            `INSERT INTO room_payments(
             room_number,
              booked_by, 
              account_title, 
@@ -44,14 +44,14 @@ const RoomPayment = {
         const { payment_date, paid_amount, payment_status } = data;
 
         await db.query(
-            `UPDATE RoomPayments 
+            `UPDATE room_payments
            SET payment_date = ?, paid_amount = ?, payment_status = ? 
            WHERE id = ?`,
             [payment_date, paid_amount, payment_status, id]
         );
     },
     delete: async (id) => {
-        await db.query('DELETE FROM RoomPayments WHERE id = ?', [id]);
+        await db.query('DELETE FROM room_payments WHERE id = ?', [id]);
     },
 };
 module.exports = RoomPayment;

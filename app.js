@@ -10,6 +10,7 @@ const galleryRoutes = require('./src/routes/galleryRoutes');
 const incomeRoutes = require('./src/routes/incomeRoutes');
 const notificationRoutes = require('./src/routes/notificationRoutes');
 const roomRoutes = require('./src/routes/roomRoutes');
+const roomBookingRequests = require('./src/routes/bookingRequestsRoutes')
 
 const app = express();
 
@@ -27,10 +28,7 @@ app.use('/api/staff', staffRoutes);
 app.use('/api/income', incomeRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/room-booking-requests', roomBookingRequests);
 
-
-// Create HTTP server and setup WebSocket
-// const server = http.createServer(app);
-// setupWebSocket(server);
 
 module.exports = app;
