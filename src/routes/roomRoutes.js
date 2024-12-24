@@ -7,7 +7,8 @@ const {
     deleteRoom,
     getRoomById,
     getRoomAvailability,
-    upload
+    upload,
+    checkRoomAvailability
 } = require('../controllers/roomController');
 
 router.get('/available', getRoomAvailability);
@@ -16,5 +17,6 @@ router.get('/', getAllRooms);
 router.post('/', createRoom);
 router.put('/:id', upload, updateRoom);
 router.delete('/:id', deleteRoom);
+router.get('/:id/check-availability', checkRoomAvailability);
 
 module.exports = router;

@@ -90,20 +90,50 @@ const Room = {
                 WHERE room_number = ?
                 AND payment_status IN ('full', 'partial')
                 AND (
+                    (checkin_date <= ? AND checkout_date >= ?) -- Overlaps with requested check-in
+                    OR
+                    (checkin_date <= ? AND checkout_date >= ?) -- Overlaps with requested check-out
+                    OR
+                    (checkin_date >= ? AND checkout_date <= ?) -- Falls entirely within requested dates
+                )
+            `;
+
+            // For debugging
+            console.log('Checking availability for room:', roomId);
+            console.log('Check-in:', checkIn);
+            console.log('Check-out:', checkOut);
+
+            const [result] = await db.query(query, [
+                roomId,
+                checkOut, checkOut,  // For check-in overlap
+                checkIn, checkIn,    // For check-out overlap
+                checkIn, checkOut    // For contained bookings
+            ]);
+
+            // Debug query results
+            console.log('Booking count:', result[0].bookingCount);
+
+            // Also fetch conflicting bookings for debugging
+            const [conflicts] = await db.query(`
+                SELECT checkin_date, checkout_date 
+                FROM room_payments 
+                WHERE room_number = ?
+                AND payment_status IN ('full', 'partial')
+                AND (
                     (checkin_date <= ? AND checkout_date >= ?)
                     OR
                     (checkin_date <= ? AND checkout_date >= ?)
                     OR
                     (checkin_date >= ? AND checkout_date <= ?)
                 )
-            `;
-
-            const [result] = await db.query(query, [
+            `, [
                 roomId,
                 checkOut, checkOut,
                 checkIn, checkIn,
                 checkIn, checkOut
             ]);
+
+            console.log('Conflicting bookings:', conflicts);
 
             return result[0].bookingCount === 0;
         } catch (error) {

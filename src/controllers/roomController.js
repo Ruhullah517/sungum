@@ -188,6 +188,50 @@ const getRoomAvailability = async (req, res) => {
     }
 };
 
+const checkRoomAvailability = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { checkIn, checkOut } = req.query;
+
+        // Validate dates
+        if (!checkIn || !checkOut) {
+            return res.status(400).json({
+                error: 'Check-in and check-out dates are required'
+            });
+        }
+
+        // Format dates
+        const formattedCheckIn = new Date(checkIn).toISOString().split('T')[0];
+        const formattedCheckOut = new Date(checkOut).toISOString().split('T')[0];
+
+        // Check if room exists and get its number
+        const [room] = await Room.getById(id);
+        if (!room) {
+            return res.status(404).json({ error: 'Room not found' });
+        }
+
+        // Use room.number instead of id for availability check
+        const isAvailable = await Room.isRoomAvailable(room.number, formattedCheckIn, formattedCheckOut);
+
+        res.status(200).json({
+            roomId: id,
+            roomNumber: room.number,
+            checkIn: formattedCheckIn,
+            checkOut: formattedCheckOut,
+            isAvailable,
+            message: isAvailable 
+                ? 'Room is available for the selected dates' 
+                : 'Room is not available for the selected dates'
+        });
+
+    } catch (error) {
+        console.error('Error checking room availability:', error);
+        res.status(500).json({
+            error: 'Failed to check room availability'
+        });
+    }
+};
+
 module.exports = {
     createRoom,
     getAllRooms,
@@ -195,5 +239,6 @@ module.exports = {
     updateRoom,
     deleteRoom,
     getRoomAvailability,
-    upload
+    upload,
+    checkRoomAvailability
 };

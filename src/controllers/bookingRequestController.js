@@ -41,7 +41,7 @@ const confirmRequest = async (req, res) => {
             payment_date: new Date(),
             total_payment: request.total_payment,
             paid_amount: request.paid_amount,
-            payment_status: request.paid_amount >= request.total_payment ? 'full' : 'partial',
+            payment_status: request.paid_amount == request.total_payment ? 'full' : 'partial',
             email: request.email,
             phone: request.phone,
             cnic: request.cnic,
