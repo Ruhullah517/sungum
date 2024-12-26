@@ -3,8 +3,8 @@ const db = require('../config/database');
 
 const Room = {
     create: async (data) => {
-        const query = 'INSERT INTO rooms (name, number, price, description, capacity, images) VALUES (?, ?, ?, ?, ?, ?)';
-        const [result] = await db.query(query, [data.name, data.number, data.price, data.description, data.capacity, data.images]);
+        const query = 'INSERT INTO rooms (name, number, price, description, capacity, number_of_beds, images) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        const [result] = await db.query(query, [data.name, data.number, data.price, data.description, data.capacity, data.number_of_beds, data.images]);
         return result;
     },
 
@@ -19,8 +19,8 @@ const Room = {
     },
 
     update: async (id, data) => {
-        const query = 'UPDATE rooms SET name = ?, number = ?, price = ?, description = ?, capacity = ?, images = ? WHERE id = ?';
-        const [result] = await db.query(query, [data.name, data.number, data.price, data.description, data.capacity, data.images, id]);
+        const query = 'UPDATE rooms SET name = ?, number = ?, price = ?, number_of_beds = ?,description = ?, capacity = ?, images = ? WHERE id = ?';
+        const [result] = await db.query(query, [data.name, data.number, data.price, data.number_of_beds, data.description, data.capacity, data.images, id]);
         return result;
     },
 

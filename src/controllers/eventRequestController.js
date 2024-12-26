@@ -56,6 +56,7 @@ const confirmRequest = async (req, res) => {
             number_of_guests: numberOfGuests, // Ensure this is an integer
             menu: request.menu,
             stage: request.stage,
+            services: request.services,
             receipt: request.receipt,
             created_at: new Date()
         };
@@ -152,6 +153,7 @@ const createRequest = async (req, res) => {
             number_of_guests: parseInt(req.body.number_of_guests, 10),
             menu: req.body.menu,
             stage: req.body.stage,
+            services: req.body.services,
             receipt: req.file ? req.file.path : null,
             status: 'pending', // Default status
             created_at: new Date()

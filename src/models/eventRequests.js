@@ -53,8 +53,8 @@ const createPaymentRecord = async (paymentData) => {
                 account_title, account_number, payment_date,
                 total_payment, paid_amount, payment_status,
                 email, phone, cnic, booking_date, booking_time, 
-                number_of_guests, menu, stage, receipt, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                number_of_guests, menu, stage, services, receipt, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 paymentData.booking_request_id,
                 paymentData.event_name,
@@ -73,6 +73,7 @@ const createPaymentRecord = async (paymentData) => {
                 paymentData.number_of_guests,
                 paymentData.menu,
                 paymentData.stage,
+                paymentData.services,
                 paymentData.receipt,
                 paymentData.created_at
             ]

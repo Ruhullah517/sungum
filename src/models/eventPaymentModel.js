@@ -22,13 +22,14 @@ const EventPayment = {
             time,
             no_of_guests,
             menu,
+            services,
             custom_stage,
         } = data;
 
         const [result] = await db.query(
             `INSERT INTO event_payments 
-             (event_name, booked_by, account_title, account_number, payment_date, total_payment, paid_amount, payment_status, email, phone, cnic, booked_date, time, no_of_guests, menu, custom_stage) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             (event_name, booked_by, account_title, account_number, payment_date, total_payment, paid_amount, payment_status, email, phone, cnic, services,booked_date, time, no_of_guests, menu, custom_stage) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 event_name,
                 booked_by,
@@ -45,6 +46,7 @@ const EventPayment = {
                 time, // "morning" or "evening"
                 no_of_guests,
                 menu, // "Yes" or "No"
+                services, // "Yes" or "No"
                 custom_stage, // "Yes" or "No"
             ]
         );
