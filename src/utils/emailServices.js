@@ -12,7 +12,7 @@ const sendConfirmationEmail = async (booking) => {
     try {
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: "ruhu.vaxir007@gmail.com",
+            to: booking.email,
             subject: 'Room Booking Confirmation',
             html: `
                <h1>Booking Confirmed!</h1>
@@ -21,7 +21,9 @@ const sendConfirmationEmail = async (booking) => {
                <p>Check-in: ${booking.checkin_date}</p>
                <p>Check-out: ${booking.checkout_date}</p>
                <p>Total Amount: Rs.${booking.total_payment}</p>
+               <p>Paid Amount: Rs.${booking.paid_payment}</p>
                <p>Payment Status: ${booking.payment_status}</p>
+               <p>Remaining Amount: Rs.${booking.total_payment - booking.paid_payment}</p>
                <br>
                <p>Thank you for choosing our hotel!</p>
            `
@@ -49,7 +51,55 @@ const sendRejectionEmail = async (booking) => {
         throw error;
     }
 };
+
+const sendEventConfirmationEmail = async (booking) => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: booking.email,
+            subject: 'Event Booking Confirmation',
+            html: `
+               <h1>Booking Confirmed!</h1>
+               <p>Dear ${booking.booked_by},</p>
+               <p>Your Event hall booking has been confirmed for ${booking.event_name}.</p>
+               <p>Booking-date: ${booking.booking_date}</p>
+               <p>Time: ${booking.booking_time}</p>
+               <p>Total Amount: Rs.${booking.total_payment}</p>
+               <p>Paid Amount: Rs.${booking.paid_payment}</p>
+               <p>Payment Status: ${booking.payment_status}</p>
+               <p>Remaining Amount: Rs.${booking.total_payment - booking.paid_payment}</p>
+               <br>
+               <p>Thank you for choosing our hotel!</p>
+           `
+        };
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        throw error;
+    }
+};
+
+const sendEventRejectionEmail = async (booking) => {
+    try {
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: booking.email,
+            subject: 'Event Hall Booking Request Rejected',
+            html: `
+               <h1>Booking Request Rejected</h1>
+               <p>Dear ${booking.booked_by},</p>
+               <p>We regret to inform you that your hall booking request for ${booking.event_name} has been rejected.</p>
+               <p>If you have any questions, please contact us.</p>
+           `
+        };
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        throw error;
+    }
+};
+
 module.exports = {
     sendConfirmationEmail,
-    sendRejectionEmail
+    sendRejectionEmail,
+    sendEventConfirmationEmail,
+    sendEventRejectionEmail
 };

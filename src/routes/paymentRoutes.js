@@ -20,7 +20,4 @@ router.post('/events' ,createEventPayment);
 router.put('/rooms/:id', updateRoomPayment);
 router.put('/events/:id', updateEventPayment);
 
-router.delete('/rooms/:id', deleteRoomPayment);
-router.delete('/events/:id', deleteEventPayment);
-
 module.exports = router;

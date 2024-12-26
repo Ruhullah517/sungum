@@ -54,7 +54,6 @@ const createRoom = async (req, res) => {
 
             // Save to database
             const result = await Room.create(roomData);
-            
             res.status(201).json({ 
                 message: 'Room created successfully', 
                 roomId: result.insertId,

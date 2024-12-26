@@ -2,7 +2,7 @@ const db = require('../config/database');
 
 const EventPayment = {
     getAll: async () => {
-        const [rows] = await db.query('SELECT * FROM EventPayments');
+        const [rows] = await db.query('SELECT * FROM event_payments');
         return rows;
     },
     create: async (data) => {
@@ -26,7 +26,7 @@ const EventPayment = {
         } = data;
 
         const [result] = await db.query(
-            `INSERT INTO EventPayments 
+            `INSERT INTO event_payments 
              (event_name, booked_by, account_title, account_number, payment_date, total_payment, paid_amount, payment_status, email, phone, cnic, booked_date, time, no_of_guests, menu, custom_stage) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
@@ -55,15 +55,12 @@ const EventPayment = {
         const { payment_date, paid_amount, payment_status } = data;
 
         await db.query(
-            `UPDATE EventPayments 
+            `UPDATE event_payments 
              SET payment_date = ?, paid_amount = ?, payment_status = ?
              WHERE id = ?`,
             [payment_date, paid_amount, payment_status, id]
         );
-    },
-    delete: async (id) => {
-        await db.query('DELETE FROM EventPayments WHERE id = ?', [id]);
-    },
+    }
 };
 
 module.exports = EventPayment;
