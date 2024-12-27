@@ -2,6 +2,7 @@ const Room = require('../models/roomModel');
 const db = require('../config/database');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -14,7 +15,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ 
+const upload = multer({
     storage: storage,
     fileFilter: (req, file, cb) => {
         // Accept images only
@@ -31,15 +32,15 @@ const createRoom = async (req, res) => {
         // Handle file upload
         upload(req, res, async (err) => {
             if (err) {
-                return res.status(400).json({ 
-                    error: err.message || 'Error uploading files' 
+                return res.status(400).json({
+                    error: err.message || 'Error uploading files'
                 });
             }
 
             // Check if files were uploaded
             if (!req.files || req.files.length === 0) {
-                return res.status(400).json({ 
-                    error: 'Please upload at least one image' 
+                return res.status(400).json({
+                    error: 'Please upload at least one image'
                 });
             }
 
@@ -54,8 +55,8 @@ const createRoom = async (req, res) => {
 
             // Save to database
             const result = await Room.create(roomData);
-            res.status(201).json({ 
-                message: 'Room created successfully', 
+            res.status(201).json({
+                message: 'Room created successfully',
                 roomId: result.insertId,
                 room: {
                     ...roomData,
@@ -65,8 +66,8 @@ const createRoom = async (req, res) => {
         });
     } catch (error) {
         console.error('Error creating room:', error);
-        res.status(500).json({ 
-            error: 'Failed to create room' 
+        res.status(500).json({
+            error: 'Failed to create room'
         });
     }
 };
@@ -108,22 +109,38 @@ const updateRoom = async (req, res) => {
         // Handle images
         let images;
         if (req.files && req.files.length > 0) {
-            // If new images are uploaded, use them
+            // Delete old images
+            const oldImages = JSON.parse(existingRoom[0].images || '[]');
+            oldImages.forEach((imagePath) => {
+                const fullPath = path.join(__dirname, '..', imagePath);
+                fs.unlink(fullPath, (err) => {
+                    if (err) {
+                        console.error(`Failed to delete old image: ${fullPath}`, err);
+                    } else {
+                        console.log(`Deleted old image: ${fullPath}`);
+                    }
+                });
+            });
+
+            // Save new image paths
             images = req.files.map(file => file.path);
         } else {
-            // If no new images, keep existing ones
+            // Retain existing images if no new images are uploaded
             images = JSON.parse(existingRoom[0].images || '[]');
         }
 
+        // Prepare updated data
         const data = {
             ...req.body,
             images: JSON.stringify(images)
         };
 
+        // Update room data in database
         await Room.update(id, data);
+
         res.status(200).json({ message: 'Room updated successfully' });
     } catch (err) {
-        console.error(err);
+        console.error('Error updating room:', err);
         res.status(500).json({ error: 'Failed to update room' });
     }
 };
@@ -131,10 +148,32 @@ const updateRoom = async (req, res) => {
 const deleteRoom = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch the room data to get associated images
+        const room = await Room.getById(id);
+        if (room.length === 0) {
+            return res.status(404).json({ message: 'Room not found' });
+        }
+
+        // Parse and delete the associated images
+        const images = JSON.parse(room[0].images || '[]');
+        images.forEach((imagePath) => {
+            const fullPath = path.join(__dirname, '..', imagePath); // Ensure the correct path
+            fs.unlink(fullPath, (err) => {
+                if (err) {
+                    console.error(`Failed to delete image: ${fullPath}`, err);
+                } else {
+                    console.log(`Deleted image: ${fullPath}`);
+                }
+            });
+        });
+
+        // Delete the room from the database
         await Room.delete(id);
-        res.status(200).json({ message: 'Room deleted successfully' });
+
+        res.status(200).json({ message: 'Room and associated images deleted successfully' });
     } catch (err) {
-        console.error(err);
+        console.error('Error deleting room:', err);
         res.status(500).json({ error: 'Failed to delete room' });
     }
 };
@@ -218,8 +257,8 @@ const checkRoomAvailability = async (req, res) => {
             checkIn: formattedCheckIn,
             checkOut: formattedCheckOut,
             isAvailable,
-            message: isAvailable 
-                ? 'Room is available for the selected dates' 
+            message: isAvailable
+                ? 'Room is available for the selected dates'
                 : 'Room is not available for the selected dates'
         });
 

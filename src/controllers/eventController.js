@@ -1,6 +1,7 @@
 const Event = require('../models/eventModel');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -74,23 +75,43 @@ const getEventById = async (req, res) => {
 const updateEvent = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch the existing event data
         const existingEvent = await Event.getById(id);
         if (existingEvent.length === 0) {
             return res.status(404).json({ message: 'Event not found' });
         }
 
         let images;
+
         if (req.files && req.files.length > 0) {
+            // Delete old images if new ones are provided
+            const oldImages = JSON.parse(existingEvent[0].images || '[]');
+            oldImages.forEach((imagePath) => {
+                const fullPath = path.join(__dirname, '..', imagePath);
+                fs.unlink(fullPath, (err) => {
+                    if (err) {
+                        console.error(`Failed to delete old image: ${fullPath}`, err);
+                    } else {
+                        console.log(`Deleted old image: ${fullPath}`);
+                    }
+                });
+            });
+
+            // Save new image paths
             images = req.files.map(file => file.path);
         } else {
+            // Retain existing images if no new images are provided
             images = JSON.parse(existingEvent[0].images || '[]');
         }
 
+        // Update the event data
         const data = { ...req.body, images: JSON.stringify(images) };
         await Event.update(id, data);
+
         res.status(200).json({ message: 'Event updated successfully' });
     } catch (err) {
-        console.error(err);
+        console.error('Error updating event:', err);
         res.status(500).json({ error: 'Failed to update event' });
     }
 };
@@ -98,10 +119,32 @@ const updateEvent = async (req, res) => {
 const deleteEvent = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Fetch the event data to get associated images
+        const event = await Event.getById(id);
+        if (event.length === 0) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
+        // Parse and delete the associated images
+        const images = JSON.parse(event[0].images || '[]');
+        images.forEach((imagePath) => {
+            const fullPath = path.join(__dirname, '..', imagePath); // Ensure the correct path
+            fs.unlink(fullPath, (err) => {
+                if (err) {
+                    console.error(`Failed to delete image: ${fullPath}`, err);
+                } else {
+                    console.log(`Deleted image: ${fullPath}`);
+                }
+            });
+        });
+
+        // Delete the event from the database
         await Event.delete(id);
-        res.status(200).json({ message: 'Event deleted successfully' });
+
+        res.status(200).json({ message: 'Event and associated images deleted successfully' });
     } catch (err) {
-        console.error(err);
+        console.error('Error deleting event:', err);
         res.status(500).json({ error: 'Failed to delete event' });
     }
 };
