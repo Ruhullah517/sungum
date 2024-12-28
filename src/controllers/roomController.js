@@ -44,8 +44,8 @@ const createRoom = async (req, res) => {
                 });
             }
 
-            // Get file paths
-            const images = req.files.map(file => file.path);
+            // Get file paths and normalize them
+            const images = req.files.map(file => path.join('uploads', file.filename)); // Use path.join for consistency
 
             // Create room data object
             const roomData = {
@@ -112,18 +112,27 @@ const updateRoom = async (req, res) => {
             // Delete old images
             const oldImages = JSON.parse(existingRoom[0].images || '[]');
             oldImages.forEach((imagePath) => {
-                const fullPath = path.join(__dirname, '..', imagePath);
-                fs.unlink(fullPath, (err) => {
-                    if (err) {
-                        console.error(`Failed to delete old image: ${fullPath}`, err);
-                    } else {
-                        console.log(`Deleted old image: ${fullPath}`);
-                    }
-                });
+                // Remove 'uploads/' prefix if it exists
+                const cleanImagePath = imagePath.replace(/^uploads[\\/]/, ''); // Clean path
+                const fullPath = path.join(__dirname, '..', '..', 'uploads', cleanImagePath);
+
+                console.log(`Checking existence of old image: ${fullPath}`);
+                if (fs.existsSync(fullPath)) {
+                    console.log(`Deleting old image: ${fullPath}`);
+                    fs.unlink(fullPath, (err) => {
+                        if (err) {
+                            console.error(`Failed to delete old image: ${fullPath}`, err);
+                        } else {
+                            console.log(`Deleted old image: ${fullPath}`);
+                        }
+                    });
+                } else {
+                    console.warn(`Old image not found: ${fullPath}`);
+                }
             });
 
             // Save new image paths
-            images = req.files.map(file => file.path);
+            images = req.files.map(file => path.join('uploads', file.filename));
         } else {
             // Retain existing images if no new images are uploaded
             images = JSON.parse(existingRoom[0].images || '[]');
@@ -158,14 +167,25 @@ const deleteRoom = async (req, res) => {
         // Parse and delete the associated images
         const images = JSON.parse(room[0].images || '[]');
         images.forEach((imagePath) => {
-            const fullPath = path.join(__dirname, '..', imagePath); // Ensure the correct path
-            fs.unlink(fullPath, (err) => {
-                if (err) {
-                    console.error(`Failed to delete image: ${fullPath}`, err);
-                } else {
-                    console.log(`Deleted image: ${fullPath}`);
-                }
-            });
+            // Remove 'uploads/' prefix if it exists
+            const cleanImagePath = imagePath.replace(/^uploads[\\/]/, ''); // Remove 'uploads/' from the start
+
+            // Construct the path to the uploads directory at the root level
+            const normalizedPath = path.join(__dirname, '..', '..', 'uploads', cleanImagePath);
+
+            console.log(`Checking existence of: ${normalizedPath}`);
+            if (fs.existsSync(normalizedPath)) {
+                console.log(`Deleting: ${normalizedPath}`);
+                fs.unlink(normalizedPath, (err) => {
+                    if (err) {
+                        console.error(`Failed to delete image: ${normalizedPath}`, err);
+                    } else {
+                        console.log(`Deleted image: ${normalizedPath}`);
+                    }
+                });
+            } else {
+                console.warn(`Image not found: ${normalizedPath}`);
+            }
         });
 
         // Delete the room from the database

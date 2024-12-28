@@ -37,7 +37,7 @@ const createEvent = async (req, res) => {
                 return res.status(400).json({ error: 'Please upload at least one image' });
             }
 
-            const images = req.files.map(file => file.path);
+            const images = req.files.map(file => path.join('uploads', file.filename)); // Use path.join for consistency
             const eventData = { ...req.body, images: JSON.stringify(images) };
             const result = await Event.create(eventData);
             res.status(201).json({ message: 'Event created successfully', eventId: result.insertId });
@@ -88,18 +88,26 @@ const updateEvent = async (req, res) => {
             // Delete old images if new ones are provided
             const oldImages = JSON.parse(existingEvent[0].images || '[]');
             oldImages.forEach((imagePath) => {
-                const fullPath = path.join(__dirname, '..', imagePath);
-                fs.unlink(fullPath, (err) => {
-                    if (err) {
-                        console.error(`Failed to delete old image: ${fullPath}`, err);
-                    } else {
-                        console.log(`Deleted old image: ${fullPath}`);
-                    }
-                });
+                const cleanImagePath = imagePath.replace(/^uploads[\\/]/, ''); // Clean path
+                const fullPath = path.join(__dirname, '..', '..', 'uploads', cleanImagePath);
+
+                console.log(`Checking existence of old image: ${fullPath}`);
+                if (fs.existsSync(fullPath)) {
+                    console.log(`Deleting old image: ${fullPath}`);
+                    fs.unlink(fullPath, (err) => {
+                        if (err) {
+                            console.error(`Failed to delete old image: ${fullPath}`, err);
+                        } else {
+                            console.log(`Deleted old image: ${fullPath}`);
+                        }
+                    });
+                } else {
+                    console.warn(`Old image not found: ${fullPath}`);
+                }
             });
 
             // Save new image paths
-            images = req.files.map(file => file.path);
+            images = req.files.map(file => path.join('uploads', file.filename));
         } else {
             // Retain existing images if no new images are provided
             images = JSON.parse(existingEvent[0].images || '[]');
@@ -129,7 +137,10 @@ const deleteEvent = async (req, res) => {
         // Parse and delete the associated images
         const images = JSON.parse(event[0].images || '[]');
         images.forEach((imagePath) => {
-            const fullPath = path.join(__dirname, '..', imagePath); // Ensure the correct path
+            const cleanImagePath = imagePath.replace(/^uploads[\\/]/, ''); // Clean path
+            const fullPath = path.join(__dirname, '..', '..', 'uploads', cleanImagePath); // Ensure the correct path
+
+            console.log(`Checking existence of: ${fullPath}`);
             fs.unlink(fullPath, (err) => {
                 if (err) {
                     console.error(`Failed to delete image: ${fullPath}`, err);
@@ -170,7 +181,7 @@ const checkEventAvailability = async (req, res) => {
         return res.status(200).json({ available: isAvailable });
     } catch (error) {
         console.error('Error checking event availability:', error);
-        return res.status(500).json({ error: 'Failed to check event availability' });;
+        return res.status(500).json({ error: 'Failed to check event availability' });
     }
 };
 
